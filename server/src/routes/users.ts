@@ -8,6 +8,9 @@ import { t, getLang, Lang } from "../lib/i18n";
 const router = Router();
 router.use(requireAuth, requireAdmin);
 
+const BCRYPT_ROUNDS = 12;
+const MIN_PASSWORD_LENGTH = 8;
+
 router.get("/", async (_req, res) => {
   const users = await prisma.user.findMany({
     orderBy: { createdAt: "asc" },
@@ -22,8 +25,10 @@ function buildUserSchema(lang: Lang, { passwordRequired }: { passwordRequired: b
     name: z.string().trim().min(1, t("nameRequired", lang)).max(80, t("nameTooLong", lang)),
     role: z.enum(["ADMIN", "EMPLOYEE"], { message: t("invalidRole", lang) }),
     password: passwordRequired
-      ? z.string().min(6, t("passwordTooShort", lang))
-      : z.union([z.string().min(6, t("passwordTooShort", lang)), z.literal("")]).optional(),
+      ? z.string().min(MIN_PASSWORD_LENGTH, t("passwordTooShort", lang))
+      : z
+          .union([z.string().min(MIN_PASSWORD_LENGTH, t("passwordTooShort", lang)), z.literal("")])
+          .optional(),
   });
 }
 
@@ -40,7 +45,7 @@ router.post("/", async (req: AuthedRequest, res) => {
     return res.status(409).json({ error: t("usernameExists", lang) });
   }
 
-  const hashed = await bcrypt.hash(password as string, 10);
+  const hashed = await bcrypt.hash(password as string, BCRYPT_ROUNDS);
   const user = await prisma.user.create({
     data: { username, name, role, password: hashed },
     select: { id: true, username: true, name: true, role: true, createdAt: true },
@@ -77,7 +82,7 @@ router.put("/:id", async (req: AuthedRequest, res) => {
       username,
       name,
       role,
-      ...(password ? { password: await bcrypt.hash(password, 10) } : {}),
+      ...(password ? { password: await bcrypt.hash(password, BCRYPT_ROUNDS) } : {}),
     },
     select: { id: true, username: true, name: true, role: true, createdAt: true },
   });

@@ -49,11 +49,19 @@ const messages = {
   forbidden: { ar: "ليس لديك صلاحية للقيام بهذا الإجراء", en: "You don't have permission to do this" },
   routeNotFound: { ar: "المسار غير موجود", en: "Route not found" },
   serverError: { ar: "حدث خطأ غير متوقع في الخادم", en: "An unexpected server error occurred" },
+  tooManyRequests: {
+    ar: "عدد الطلبات كبير جداً، الرجاء المحاولة بعد قليل",
+    en: "Too many requests, please try again shortly",
+  },
+  tooManyLoginAttempts: {
+    ar: "محاولات دخول كثيرة جداً، الرجاء المحاولة بعد 15 دقيقة",
+    en: "Too many login attempts, please try again in 15 minutes",
+  },
 
   usernameTooLong: { ar: "اسم المستخدم طويل جداً", en: "Username is too long" },
   nameRequired: { ar: "الاسم مطلوب", en: "Name is required" },
   nameTooLong: { ar: "الاسم طويل جداً", en: "Name is too long" },
-  passwordTooShort: { ar: "كلمة المرور يجب أن تكون 6 أحرف على الأقل", en: "Password must be at least 6 characters" },
+  passwordTooShort: { ar: "كلمة المرور يجب أن تكون 8 أحرف على الأقل", en: "Password must be at least 8 characters" },
   invalidRole: { ar: "الصلاحية غير صحيحة", en: "Invalid role" },
   usernameExists: { ar: "اسم المستخدم مستخدم مسبقاً", en: "This username is already taken" },
   cannotDeleteSelf: { ar: "لا يمكنك حذف حسابك الخاص", en: "You cannot delete your own account" },

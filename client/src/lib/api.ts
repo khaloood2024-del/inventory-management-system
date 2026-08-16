@@ -1,6 +1,10 @@
 import axios from "axios";
 
-export const api = axios.create({ baseURL: "/api" });
+// في التطوير المحلي: يبقى فارغًا ويعتمد على بروكسي Vite (راجع vite.config.ts).
+// في الإنتاج: يجب ضبط VITE_API_URL على رابط الخادم المنشور (مثال: https://your-app.up.railway.app/api)
+const baseURL = import.meta.env.VITE_API_URL || "/api";
+
+export const api = axios.create({ baseURL });
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");

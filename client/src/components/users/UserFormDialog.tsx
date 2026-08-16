@@ -108,7 +108,7 @@ export function UserFormDialog({ open, onOpenChange, user, onSaved }: UserFormDi
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             required={!user}
-            minLength={6}
+            minLength={8}
           />
         </FieldWrapper>
 
