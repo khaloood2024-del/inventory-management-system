@@ -1,12 +1,10 @@
-// للتطوير المحلي نستخدم SQLite (بدون أي إعداد إضافي).
-// للانتقال إلى قاعدة بيانات سحابية (Neon / Supabase / أي PostgreSQL):
-//   1) غيّر provider إلى "postgresql"
-//   2) ضع رابط الاتصال الخاص بك في DATABASE_URL داخل ملف server/.env
-//   3) نفّذ: npm run prisma:migrate
-// لا حاجة لأي تعديل آخر في الكود.
+// قاعدة بيانات PostgreSQL سحابية (Supabase).
+// DATABASE_URL: رابط الاتصال المجمّع (pooler) المستخدم في وقت التشغيل العادي.
+// DIRECT_URL: رابط اتصال مباشر (بدون pooler) يستخدمه Prisma Migrate فقط عند إنشاء/تعديل الجداول.
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 generator client {

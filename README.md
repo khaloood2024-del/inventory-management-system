@@ -33,7 +33,7 @@
 |---|---|
 | الواجهة (Frontend) | React + TypeScript + Vite + Base UI + Tailwind CSS |
 | الخلفية (Backend) | Node.js + Express + TypeScript |
-| قاعدة البيانات | PostgreSQL (عبر Prisma ORM) — أو SQLite محليًا للتطوير |
+| قاعدة البيانات | PostgreSQL سحابية (Supabase) عبر Prisma ORM |
 | التوثيق (Auth) | JWT |
 
 ## هيكل المشروع
@@ -72,8 +72,11 @@ npm run dev   # يشغّل الواجهة على http://localhost:5173
 
 ## متغيرات البيئة (server/.env)
 
+المشروع متصل حاليًا بقاعدة بيانات PostgreSQL سحابية على [Supabase](https://supabase.com) (خطة مجانية). رابط الاتصال موجود في `server/.env` (غير مرفوع على Git):
+
 ```
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="postgresql://user:password@pooler-host:6543/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://user:password@direct-host:5432/postgres"
 JWT_SECRET="غيّر-هذه-القيمة-إلى-نص-عشوائي-طويل"
 PORT=4000
 ADMIN_USERNAME="admin"
@@ -81,22 +84,14 @@ ADMIN_PASSWORD="admin123"
 ADMIN_NAME="اسم المدير"
 ```
 
-## الانتقال إلى قاعدة بيانات سحابية (PostgreSQL)
+- `DATABASE_URL`: رابط الاتصال المجمّع (Transaction pooler، المنفذ `6543`) — يُستخدم في وقت التشغيل العادي.
+- `DIRECT_URL`: رابط اتصال مباشر (المنفذ `5432`) — يستخدمه Prisma Migrate فقط عند إنشاء أو تعديل الجداول.
 
-المشروع يستخدم SQLite محليًا فقط لتسهيل التطوير بدون أي إعداد إضافي. للانتقال إلى قاعدة بيانات PostgreSQL سحابية (مثل [Neon](https://neon.tech) أو [Supabase](https://supabase.com) — كلاهما يقدّم خطة مجانية بدون بطاقة ائتمان ويعملان بشكل جيد من السعودية):
+## الانتقال إلى مشروع Supabase آخر (أو أي PostgreSQL)
 
-1. أنشئ مشروع قاعدة بيانات مجاني في Neon أو Supabase، وانسخ رابط الاتصال (Connection String).
-2. في `server/prisma/schema.prisma` غيّر:
-   ```prisma
-   datasource db {
-     provider = "postgresql"
-     url      = env("DATABASE_URL")
-   }
-   ```
-3. ضع رابط الاتصال في `server/.env`:
-   ```
-   DATABASE_URL="postgresql://user:password@host/dbname?sslmode=require"
-   ```
+1. أنشئ مشروع قاعدة بيانات في [Supabase](https://supabase.com) (أو [Neon](https://neon.tech))، واحفظ كلمة مرور القاعدة.
+2. من لوحة Supabase اضغط **Connect** في أعلى الصفحة، واختر تبويب **ORMs → Prisma** لتحصل على `DATABASE_URL` و`DIRECT_URL` بالصيغة الجاهزة.
+3. ضع الرابطين في `server/.env` (استبدل `[YOUR-PASSWORD]` بكلمة المرور الفعلية).
 4. نفّذ:
    ```bash
    cd server
@@ -104,7 +99,7 @@ ADMIN_NAME="اسم المدير"
    npm run seed
    ```
 
-لا حاجة لأي تعديل آخر في الكود — كل الاستعلامات تمر عبر Prisma وتعمل بنفس الشكل على القاعدتين.
+لا حاجة لأي تعديل آخر في الكود — `schema.prisma` يستخدم متغيرات البيئة هذه مباشرة.
 
 ## ملاحظات أمان قبل النشر الفعلي
 
@@ -148,7 +143,7 @@ A system for managing products, categories, and stock movements, with a dashboar
 |---|---|
 | Frontend | React + TypeScript + Vite + Base UI + Tailwind CSS |
 | Backend | Node.js + Express + TypeScript |
-| Database | PostgreSQL (via Prisma ORM) — or SQLite locally for development |
+| Database | Cloud PostgreSQL (Supabase) via Prisma ORM |
 | Auth | JWT |
 
 ## Project Structure
@@ -165,7 +160,7 @@ client/   Frontend (React)
 ```bash
 cd server
 npm install
-npm run prisma:migrate   # creates the local database and applies the schema
+npm run prisma:migrate   # applies the schema to the configured database
 npm run seed              # adds an admin user and sample data
 npm run dev                # runs the server on http://localhost:4000
 ```
@@ -187,8 +182,11 @@ Open `http://localhost:5173` in your browser and log in with the credentials abo
 
 ## Environment Variables (server/.env)
 
+The project is currently connected to a cloud PostgreSQL database on [Supabase](https://supabase.com) (free tier). The connection string lives in `server/.env` (not committed to Git):
+
 ```
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="postgresql://user:password@pooler-host:6543/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://user:password@direct-host:5432/postgres"
 JWT_SECRET="change-this-to-a-long-random-string"
 PORT=4000
 ADMIN_USERNAME="admin"
@@ -196,22 +194,14 @@ ADMIN_PASSWORD="admin123"
 ADMIN_NAME="Admin name"
 ```
 
-## Moving to a Cloud Database (PostgreSQL)
+- `DATABASE_URL`: the pooled connection (Transaction pooler, port `6543`) — used at normal runtime.
+- `DIRECT_URL`: a direct connection (port `5432`) — used only by Prisma Migrate when creating or changing tables.
 
-The project uses SQLite locally only, to make development setup-free. To move to a cloud PostgreSQL database (e.g. [Neon](https://neon.tech) or [Supabase](https://supabase.com) — both offer a free tier with no credit card, and work well from Saudi Arabia):
+## Switching to a Different Supabase Project (or Any PostgreSQL)
 
-1. Create a free database project on Neon or Supabase, and copy the connection string.
-2. In `server/prisma/schema.prisma`, change:
-   ```prisma
-   datasource db {
-     provider = "postgresql"
-     url      = env("DATABASE_URL")
-   }
-   ```
-3. Put the connection string in `server/.env`:
-   ```
-   DATABASE_URL="postgresql://user:password@host/dbname?sslmode=require"
-   ```
+1. Create a database project on [Supabase](https://supabase.com) (or [Neon](https://neon.tech)), and save the database password.
+2. From the Supabase dashboard, click **Connect** at the top of the page, then open the **ORMs → Prisma** tab to get ready-made `DATABASE_URL` and `DIRECT_URL` strings.
+3. Put both in `server/.env` (replace `[YOUR-PASSWORD]` with the actual password).
 4. Run:
    ```bash
    cd server
@@ -219,7 +209,7 @@ The project uses SQLite locally only, to make development setup-free. To move to
    npm run seed
    ```
 
-No other code changes are needed — every query goes through Prisma and works identically on both databases.
+No other code changes are needed — `schema.prisma` reads these environment variables directly.
 
 ## Security Notes Before a Real Deployment
 
