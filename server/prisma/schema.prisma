@@ -1,0 +1,56 @@
+// للتطوير المحلي نستخدم SQLite (بدون أي إعداد إضافي).
+// للانتقال إلى قاعدة بيانات سحابية (Neon / Supabase / أي PostgreSQL):
+//   1) غيّر provider إلى "postgresql"
+//   2) ضع رابط الاتصال الخاص بك في DATABASE_URL داخل ملف server/.env
+//   3) نفّذ: npm run prisma:migrate
+// لا حاجة لأي تعديل آخر في الكود.
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  name      String
+  role      String   @default("مدير النظام")
+  createdAt DateTime @default(now())
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+}
+
+model Product {
+  id          String          @id @default(cuid())
+  code        String          @unique
+  name        String
+  description String?
+  price       Float
+  quantity    Int             @default(0)
+  categoryId  String
+  category    Category        @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  movements   StockMovement[]
+}
+
+// type: "IN" (إضافة) أو "OUT" (سحب) — نص بدل enum لضمان التوافق بين SQLite و PostgreSQL
+model StockMovement {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  type      String
+  quantity  Int
+  reason    String
+  createdAt DateTime @default(now())
+}
