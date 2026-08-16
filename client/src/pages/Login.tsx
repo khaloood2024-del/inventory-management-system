@@ -6,9 +6,11 @@ import { useAuth } from "../context/AuthContext";
 import { apiErrorMessage } from "../lib/api";
 import { TextInput } from "../components/ui/Field";
 import { AppButton } from "../components/ui/Button";
+import { useLanguage } from "../i18n/LanguageContext";
 
 export function LoginPage() {
   const { user, login, isLoading } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -23,7 +25,7 @@ export function LoginPage() {
       await login(username, password);
       navigate("/");
     } catch (err) {
-      setError(apiErrorMessage(err, "تعذّر تسجيل الدخول"));
+      setError(apiErrorMessage(err, t("auth.loginFailed")));
     }
   }
 
@@ -34,37 +36,37 @@ export function LoginPage() {
           <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-500 text-white">
             <Boxes size={24} />
           </span>
-          <h1 className="font-serif-display text-2xl font-semibold text-ink">إدارة المخزون</h1>
-          <p className="text-sm text-ink-muted">سجّل الدخول للمتابعة إلى لوحة التحكم</p>
+          <h1 className="font-serif-display text-2xl font-semibold text-ink">{t("nav.appName")}</h1>
+          <p className="text-sm text-ink-muted">{t("auth.subtitle")}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-ink">اسم المستخدم</label>
+            <label className="text-sm font-medium text-ink">{t("auth.username")}</label>
             <div className="relative">
-              <User size={16} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-ink-muted" />
+              <User size={16} className="pointer-events-none absolute end-4 top-1/2 -translate-y-1/2 text-ink-muted" />
               <TextInput
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="admin"
                 required
                 autoFocus
-                className="w-full rounded-full ps-10 pe-4"
+                className="w-full rounded-full pe-10 ps-4"
               />
             </div>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-ink">كلمة المرور</label>
+            <label className="text-sm font-medium text-ink">{t("auth.password")}</label>
             <div className="relative">
-              <Lock size={16} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-ink-muted" />
+              <Lock size={16} className="pointer-events-none absolute end-4 top-1/2 -translate-y-1/2 text-ink-muted" />
               <TextInput
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                className="w-full rounded-full ps-10 pe-4"
+                className="w-full rounded-full pe-10 ps-4"
               />
             </div>
           </div>
@@ -72,7 +74,7 @@ export function LoginPage() {
           {error && <p className="text-sm text-danger-text">{error}</p>}
 
           <AppButton type="submit" disabled={isLoading} className="mt-2 w-full">
-            {isLoading ? "جارِ الدخول..." : "تسجيل الدخول"}
+            {isLoading ? t("auth.loggingIn") : t("auth.loginButton")}
           </AppButton>
         </form>
       </div>

@@ -7,6 +7,7 @@ import categoryRoutes from "./routes/categories";
 import productRoutes from "./routes/products";
 import movementRoutes from "./routes/movements";
 import dashboardRoutes from "./routes/dashboard";
+import { t, getLang } from "./lib/i18n";
 
 const app = express();
 
@@ -22,13 +23,13 @@ app.use("/api/movements", movementRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
 app.use((req, res) => {
-  res.status(404).json({ error: "المسار غير موجود" });
+  res.status(404).json({ error: t("routeNotFound", getLang(req)) });
 });
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
   console.error(err);
-  res.status(500).json({ error: "حدث خطأ غير متوقع في الخادم" });
+  res.status(500).json({ error: t("serverError", getLang(req)) });
 });
 
 const port = Number(process.env.PORT) || 4000;

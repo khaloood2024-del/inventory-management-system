@@ -7,6 +7,7 @@ import { AppButton } from "../ui/Button";
 import { api, apiErrorMessage } from "../../lib/api";
 import type { Category, Product } from "../../lib/types";
 import { useAppToast } from "../ui/Toast";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface ProductFormDialogProps {
   open: boolean;
@@ -19,6 +20,7 @@ interface ProductFormDialogProps {
 const emptyForm = { code: "", name: "", categoryId: "", quantity: "0", price: "0", description: "" };
 
 export function ProductFormDialog({ open, onOpenChange, product, categories, onSaved }: ProductFormDialogProps) {
+  const { t } = useLanguage();
   const toast = useAppToast();
   const [form, setForm] = useState(emptyForm);
   const [error, setError] = useState("");
@@ -57,14 +59,14 @@ export function ProductFormDialog({ open, onOpenChange, product, categories, onS
     try {
       if (product) {
         await api.put(`/products/${product.id}`, payload);
-        toast.success("تم تحديث بيانات المنتج بنجاح");
+        toast.success(t("productForm.updateSuccess"));
       } else {
         await api.post("/products", payload);
-        toast.success("تمت إضافة المنتج بنجاح");
+        toast.success(t("productForm.addSuccess"));
       }
       onSaved();
     } catch (err) {
-      setError(apiErrorMessage(err, "تعذّر حفظ المنتج"));
+      setError(apiErrorMessage(err, t("productForm.saveError")));
     } finally {
       setSaving(false);
     }
@@ -74,12 +76,12 @@ export function ProductFormDialog({ open, onOpenChange, product, categories, onS
     <AppDialog
       open={open}
       onOpenChange={onOpenChange}
-      title={product ? "تعديل المنتج" : "إضافة منتج جديد"}
+      title={product ? t("productForm.editTitle") : t("productForm.addTitle")}
       widthClass="max-w-xl"
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FieldWrapper label="اسم المنتج" required>
+          <FieldWrapper label={t("productForm.name")} required>
             <TextInput
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -87,7 +89,7 @@ export function ProductFormDialog({ open, onOpenChange, product, categories, onS
               maxLength={120}
             />
           </FieldWrapper>
-          <FieldWrapper label="كود المنتج" required>
+          <FieldWrapper label={t("productForm.code")} required>
             <TextInput
               value={form.code}
               onChange={(e) => setForm({ ...form, code: e.target.value })}
@@ -98,16 +100,16 @@ export function ProductFormDialog({ open, onOpenChange, product, categories, onS
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FieldWrapper label="التصنيف" required>
+          <FieldWrapper label={t("productForm.category")} required>
             <AppSelect
               value={form.categoryId}
               onChange={(v) => setForm({ ...form, categoryId: v })}
               options={categories.map((c) => ({ value: c.id, label: c.name }))}
-              placeholder="اختر التصنيف"
+              placeholder={t("productForm.categoryPlaceholder")}
               className="w-full"
             />
           </FieldWrapper>
-          <FieldWrapper label="السعر (ر.س)" required>
+          <FieldWrapper label={t("productForm.price")} required>
             <TextInput
               type="number"
               step="0.01"
@@ -119,7 +121,7 @@ export function ProductFormDialog({ open, onOpenChange, product, categories, onS
           </FieldWrapper>
         </div>
 
-        <FieldWrapper label="الكمية المتوفرة" required>
+        <FieldWrapper label={t("productForm.quantity")} required>
           <TextInput
             type="number"
             min="0"
@@ -130,7 +132,7 @@ export function ProductFormDialog({ open, onOpenChange, product, categories, onS
           />
         </FieldWrapper>
 
-        <FieldWrapper label="وصف مختصر">
+        <FieldWrapper label={t("productForm.description")}>
           <TextArea
             rows={3}
             value={form.description}
@@ -143,16 +145,14 @@ export function ProductFormDialog({ open, onOpenChange, product, categories, onS
 
         <div className="mt-2 flex justify-end gap-2">
           <AppButton type="button" variant="secondary" onClick={() => onOpenChange(false)}>
-            إلغاء
+            {t("common.cancel")}
           </AppButton>
           <AppButton type="submit" disabled={saving || !categories.length}>
-            {saving ? "جارِ الحفظ..." : product ? "حفظ التعديلات" : "إضافة المنتج"}
+            {saving ? t("common.saving") : product ? t("productForm.saveChanges") : t("productForm.addButton")}
           </AppButton>
         </div>
         {!categories.length && (
-          <p className="text-xs text-warning-text">
-            لا توجد تصنيفات بعد، الرجاء إضافة تصنيف أولاً من صفحة التصنيفات.
-          </p>
+          <p className="text-xs text-warning-text">{t("productForm.noCategories")}</p>
         )}
       </form>
     </AppDialog>

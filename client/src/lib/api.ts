@@ -7,6 +7,7 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  config.headers["X-Lang"] = localStorage.getItem("language") === "en" ? "en" : "ar";
   return config;
 });
 
@@ -24,9 +25,10 @@ api.interceptors.response.use(
   }
 );
 
-export function apiErrorMessage(error: unknown, fallback = "حدث خطأ غير متوقع"): string {
+export function apiErrorMessage(error: unknown, fallback?: string): string {
+  const defaultFallback = localStorage.getItem("language") === "en" ? "An unexpected error occurred" : "حدث خطأ غير متوقع";
   if (axios.isAxiosError(error)) {
-    return error.response?.data?.error || fallback;
+    return error.response?.data?.error || fallback || defaultFallback;
   }
-  return fallback;
+  return fallback || defaultFallback;
 }

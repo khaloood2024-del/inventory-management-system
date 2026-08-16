@@ -9,18 +9,10 @@ import { AppSelect } from "../components/ui/Select";
 import { FieldWrapper, TextInput } from "../components/ui/Field";
 import { MovementBadge } from "../components/ui/Badge";
 import { useAppToast } from "../components/ui/Toast";
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleString("ar-SA", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+import { useLanguage } from "../i18n/LanguageContext";
 
 export function MovementsPage() {
+  const { t, locale } = useLanguage();
   const toast = useAppToast();
   const [movements, setMovements] = useState<StockMovement[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -38,6 +30,16 @@ export function MovementsPage() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
 
+  function formatDate(iso: string) {
+    return new Date(iso).toLocaleString(locale, {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
   async function loadMovements() {
     setLoading(true);
     setError("");
@@ -47,7 +49,7 @@ export function MovementsPage() {
       });
       setMovements(data);
     } catch (err) {
-      setError(apiErrorMessage(err, "تعذّر تحميل حركات المخزون"));
+      setError(apiErrorMessage(err, t("movements.loadError")));
     } finally {
       setLoading(false);
     }
@@ -88,12 +90,12 @@ export function MovementsPage() {
     setSaving(true);
     try {
       await api.post("/movements", { productId, type, quantity, reason });
-      toast.success(type === "IN" ? "تمت إضافة الكمية بنجاح" : "تم سحب الكمية بنجاح");
+      toast.success(type === "IN" ? t("movements.addSuccess") : t("movements.withdrawSuccess"));
       setFormOpen(false);
       loadMovements();
       loadProducts();
     } catch (err) {
-      setFormError(apiErrorMessage(err, "تعذّر تسجيل الحركة"));
+      setFormError(apiErrorMessage(err, t("movements.saveError")));
     } finally {
       setSaving(false);
     }
@@ -102,19 +104,19 @@ export function MovementsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-serif-display text-3xl font-semibold text-ink">حركات المخزون</h1>
+        <h1 className="font-serif-display text-3xl font-semibold text-ink">{t("movements.title")}</h1>
         <AppButton icon={<Plus size={16} />} onClick={openAdd} disabled={!products.length}>
-          تسجيل حركة جديدة
+          {t("movements.addNew")}
         </AppButton>
       </div>
 
       <div className="flex flex-col gap-3 rounded-3xl border border-card-border bg-card p-4 sm:flex-row sm:items-center">
         <label className="flex flex-1 items-center gap-2 text-sm text-ink-muted">
-          من تاريخ
+          {t("products.dateFrom")}
           <TextInput type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-full" />
         </label>
         <label className="flex flex-1 items-center gap-2 text-sm text-ink-muted">
-          إلى تاريخ
+          {t("products.dateTo")}
           <TextInput type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-full" />
         </label>
         {(dateFrom || dateTo) && (
@@ -126,28 +128,28 @@ export function MovementsPage() {
             }}
             className="text-sm font-medium text-ink underline decoration-card-border underline-offset-4 hover:decoration-ink sm:shrink-0"
           >
-            مسح تاريخ البحث
+            {t("products.clearDateFilter")}
           </button>
         )}
       </div>
 
       <div className="overflow-hidden rounded-3xl border border-card-border bg-card">
         {loading ? (
-          <p className="p-8 text-center text-sm text-ink-muted">جارِ التحميل...</p>
+          <p className="p-8 text-center text-sm text-ink-muted">{t("common.loading")}</p>
         ) : error ? (
           <p className="p-8 text-center text-sm text-danger-text">{error}</p>
         ) : movements.length === 0 ? (
-          <p className="p-8 text-center text-sm text-ink-muted">لا توجد حركات مخزون بعد</p>
+          <p className="p-8 text-center text-sm text-ink-muted">{t("movements.empty")}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-surface">
                 <tr className="text-ink-muted">
-                  <th className="px-4 py-3 text-right font-medium">المنتج</th>
-                  <th className="px-4 py-3 text-right font-medium">نوع الحركة</th>
-                  <th className="px-4 py-3 text-right font-medium">الكمية</th>
-                  <th className="px-4 py-3 text-right font-medium">السبب</th>
-                  <th className="px-4 py-3 text-right font-medium">التاريخ</th>
+                  <th className="px-4 py-3 text-start font-medium">{t("table.product")}</th>
+                  <th className="px-4 py-3 text-start font-medium">{t("movements.type")}</th>
+                  <th className="px-4 py-3 text-start font-medium">{t("table.quantity")}</th>
+                  <th className="px-4 py-3 text-start font-medium">{t("table.reason")}</th>
+                  <th className="px-4 py-3 text-start font-medium">{t("table.date")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -174,9 +176,9 @@ export function MovementsPage() {
         )}
       </div>
 
-      <AppDialog open={formOpen} onOpenChange={setFormOpen} title="تسجيل حركة مخزون جديدة" widthClass="max-w-md">
+      <AppDialog open={formOpen} onOpenChange={setFormOpen} title={t("movements.formTitle")} widthClass="max-w-md">
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <FieldWrapper label="المنتج" required>
+          <FieldWrapper label={t("movements.product")} required>
             <AppSelect
               value={productId}
               onChange={setProductId}
@@ -184,11 +186,11 @@ export function MovementsPage() {
               className="w-full"
             />
             {selectedProduct && (
-              <p className="text-xs text-ink-muted">الكمية المتوفرة حالياً: {selectedProduct.quantity}</p>
+              <p className="text-xs text-ink-muted">{t("movements.currentQty", { quantity: selectedProduct.quantity })}</p>
             )}
           </FieldWrapper>
 
-          <FieldWrapper label="نوع الحركة" required>
+          <FieldWrapper label={t("movements.type")} required>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
@@ -200,7 +202,7 @@ export function MovementsPage() {
                 }`}
               >
                 <ArrowUpCircle size={16} />
-                إضافة كمية
+                {t("movements.stockIn")}
               </button>
               <button
                 type="button"
@@ -212,12 +214,12 @@ export function MovementsPage() {
                 }`}
               >
                 <ArrowDownCircle size={16} />
-                سحب كمية
+                {t("movements.stockOut")}
               </button>
             </div>
           </FieldWrapper>
 
-          <FieldWrapper label="الكمية" required>
+          <FieldWrapper label={t("movements.quantity")} required>
             <TextInput
               type="number"
               min="1"
@@ -228,11 +230,11 @@ export function MovementsPage() {
             />
           </FieldWrapper>
 
-          <FieldWrapper label="سبب الحركة" required>
+          <FieldWrapper label={t("movements.reason")} required>
             <TextInput
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="مثال: توريد من المورد، بيع، جرد دوري..."
+              placeholder={t("movements.reasonPlaceholder")}
               required
               maxLength={200}
             />
@@ -242,10 +244,10 @@ export function MovementsPage() {
 
           <div className="mt-2 flex justify-end gap-2">
             <AppButton type="button" variant="secondary" onClick={() => setFormOpen(false)}>
-              إلغاء
+              {t("common.cancel")}
             </AppButton>
             <AppButton type="submit" disabled={saving}>
-              {saving ? "جارِ الحفظ..." : "تسجيل الحركة"}
+              {saving ? t("common.saving") : t("movements.submit")}
             </AppButton>
           </div>
         </form>

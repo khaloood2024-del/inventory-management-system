@@ -24,7 +24,8 @@
 
 ### الواجهة
 - شريط جانبي قابل للطي إلى أيقونات فقط (مع حفظ التفضيل)، وزر الطي مدمج بجانب شعار النظام.
-- واجهة متجاوبة (Responsive) تعمل على الجوال والتابلت وسطح المكتب، بدعم كامل للغة العربية (RTL).
+- واجهة متجاوبة (Responsive) تعمل على الجوال والتابلت وسطح المكتب.
+- **دعم لغتين (عربي / إنجليزي)** مع زر تبديل في الشريط العلوي — يبدّل اتجاه الواجهة تلقائيًا بين RTL وLTR، ويحفظ اللغة المختارة، ويترجم حتى رسائل الأخطاء القادمة من الخادم.
 
 ## التقنيات المستخدمة
 
@@ -138,7 +139,8 @@ A system for managing products, categories, and stock movements, with a dashboar
 
 ### Interface
 - Collapsible sidebar (icon-only mode, preference persisted), with the collapse toggle placed next to the logo.
-- Fully responsive UI across mobile, tablet, and desktop, with full Arabic (RTL) support.
+- Fully responsive UI across mobile, tablet, and desktop.
+- **Bilingual interface (Arabic / English)** with a language toggle in the top bar — automatically switches the layout direction between RTL and LTR, remembers the chosen language, and even translates error messages coming from the server.
 
 ## Tech Stack
 

@@ -1,16 +1,18 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import { t, getLang } from "../lib/i18n";
 
 export interface AuthedRequest extends Request {
   userId?: string;
 }
 
 export function requireAuth(req: AuthedRequest, res: Response, next: NextFunction) {
+  const lang = getLang(req);
   const header = req.headers.authorization;
   const token = header?.startsWith("Bearer ") ? header.slice(7) : null;
 
   if (!token) {
-    return res.status(401).json({ error: "غير مصرح، الرجاء تسجيل الدخول" });
+    return res.status(401).json({ error: t("unauthorized", lang) });
   }
 
   try {
@@ -18,6 +20,6 @@ export function requireAuth(req: AuthedRequest, res: Response, next: NextFunctio
     req.userId = payload.userId;
     next();
   } catch {
-    return res.status(401).json({ error: "جلسة الدخول غير صالحة أو منتهية" });
+    return res.status(401).json({ error: t("invalidSession", lang) });
   }
 }

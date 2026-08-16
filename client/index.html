@@ -11,6 +11,13 @@
       rel="stylesheet"
     />
     <title>إدارة المخزون</title>
+    <script>
+      (function () {
+        var lang = localStorage.getItem("language") === "en" ? "en" : "ar";
+        document.documentElement.lang = lang;
+        document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

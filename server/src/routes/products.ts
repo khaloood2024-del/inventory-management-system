@@ -3,6 +3,7 @@ import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { requireAuth } from "../middleware/auth";
+import { t, getLang, Lang } from "../lib/i18n";
 
 const router = Router();
 router.use(requireAuth);
@@ -74,7 +75,7 @@ router.get("/:id", async (req, res) => {
     where: { id: req.params.id },
     include: { category: true },
   });
-  if (!product) return res.status(404).json({ error: "المنتج غير موجود" });
+  if (!product) return res.status(404).json({ error: t("productNotFound", getLang(req)) });
   res.json({
     id: product.id,
     code: product.code,
@@ -89,27 +90,30 @@ router.get("/:id", async (req, res) => {
   });
 });
 
-const productSchema = z.object({
-  code: z.string().trim().min(1, "كود المنتج مطلوب").max(40, "كود المنتج طويل جداً"),
-  name: z.string().trim().min(1, "اسم المنتج مطلوب").max(120, "اسم المنتج طويل جداً"),
-  description: z.string().trim().max(1000).optional().or(z.literal("")),
-  price: z.coerce.number().nonnegative("السعر يجب أن يكون رقماً موجباً"),
-  quantity: z.coerce.number().int("الكمية يجب أن تكون رقماً صحيحاً").nonnegative("الكمية يجب أن تكون رقماً موجباً"),
-  categoryId: z.string().min(1, "التصنيف مطلوب"),
-});
+function buildProductSchema(lang: Lang) {
+  return z.object({
+    code: z.string().trim().min(1, t("productCodeRequired", lang)).max(40, t("productCodeTooLong", lang)),
+    name: z.string().trim().min(1, t("productNameRequired", lang)).max(120, t("productNameTooLong", lang)),
+    description: z.string().trim().max(1000).optional().or(z.literal("")),
+    price: z.coerce.number().nonnegative(t("pricePositive", lang)),
+    quantity: z.coerce.number().int(t("quantityInteger", lang)).nonnegative(t("quantityPositive", lang)),
+    categoryId: z.string().min(1, t("categoryRequired", lang)),
+  });
+}
 
 router.post("/", async (req, res) => {
-  const parsed = productSchema.safeParse(req.body);
+  const lang = getLang(req);
+  const parsed = buildProductSchema(lang).safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: parsed.error.issues[0].message });
   }
   const data = parsed.data;
 
   const category = await prisma.category.findUnique({ where: { id: data.categoryId } });
-  if (!category) return res.status(400).json({ error: "التصنيف المحدد غير موجود" });
+  if (!category) return res.status(400).json({ error: t("categoryNotExists", lang) });
 
   const existingCode = await prisma.product.findUnique({ where: { code: data.code } });
-  if (existingCode) return res.status(409).json({ error: "يوجد منتج بنفس الكود مسبقاً" });
+  if (existingCode) return res.status(409).json({ error: t("productCodeExists", lang) });
 
   const product = await prisma.$transaction(async (tx) => {
     const created = await tx.product.create({
@@ -129,7 +133,7 @@ router.post("/", async (req, res) => {
           productId: created.id,
           type: "IN",
           quantity: data.quantity,
-          reason: "رصيد افتتاحي عند إضافة المنتج",
+          reason: t("openingBalanceReason", lang),
         },
       });
     }
@@ -141,21 +145,22 @@ router.post("/", async (req, res) => {
 });
 
 router.put("/:id", async (req, res) => {
-  const parsed = productSchema.safeParse(req.body);
+  const lang = getLang(req);
+  const parsed = buildProductSchema(lang).safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: parsed.error.issues[0].message });
   }
   const data = parsed.data;
 
   const product = await prisma.product.findUnique({ where: { id: req.params.id } });
-  if (!product) return res.status(404).json({ error: "المنتج غير موجود" });
+  if (!product) return res.status(404).json({ error: t("productNotFound", lang) });
 
   const category = await prisma.category.findUnique({ where: { id: data.categoryId } });
-  if (!category) return res.status(400).json({ error: "التصنيف المحدد غير موجود" });
+  if (!category) return res.status(400).json({ error: t("categoryNotExists", lang) });
 
   const existingCode = await prisma.product.findUnique({ where: { code: data.code } });
   if (existingCode && existingCode.id !== product.id) {
-    return res.status(409).json({ error: "يوجد منتج بنفس الكود مسبقاً" });
+    return res.status(409).json({ error: t("productCodeExists", lang) });
   }
 
   const quantityDiff = data.quantity - product.quantity;
@@ -179,7 +184,7 @@ router.put("/:id", async (req, res) => {
           productId: result.id,
           type: quantityDiff > 0 ? "IN" : "OUT",
           quantity: Math.abs(quantityDiff),
-          reason: "تعديل يدوي للكمية من صفحة المنتجات",
+          reason: t("manualAdjustmentReason", lang),
         },
       });
     }
@@ -192,7 +197,7 @@ router.put("/:id", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   const product = await prisma.product.findUnique({ where: { id: req.params.id } });
-  if (!product) return res.status(404).json({ error: "المنتج غير موجود" });
+  if (!product) return res.status(404).json({ error: t("productNotFound", getLang(req)) });
   await prisma.product.delete({ where: { id: req.params.id } });
   res.status(204).send();
 });

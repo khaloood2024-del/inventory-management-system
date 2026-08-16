@@ -8,8 +8,10 @@ import { AppDialog } from "../components/ui/Dialog";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { FieldWrapper, TextInput } from "../components/ui/Field";
 import { useAppToast } from "../components/ui/Toast";
+import { useLanguage } from "../i18n/LanguageContext";
 
 export function CategoriesPage() {
+  const { t } = useLanguage();
   const toast = useAppToast();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,7 +33,7 @@ export function CategoriesPage() {
       const { data } = await api.get("/categories");
       setCategories(data);
     } catch (err) {
-      setError(apiErrorMessage(err, "تعذّر تحميل التصنيفات"));
+      setError(apiErrorMessage(err, t("categories.loadError")));
     } finally {
       setLoading(false);
     }
@@ -39,6 +41,7 @@ export function CategoriesPage() {
 
   useEffect(() => {
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function openAdd() {
@@ -62,15 +65,15 @@ export function CategoriesPage() {
     try {
       if (editing) {
         await api.put(`/categories/${editing.id}`, { name });
-        toast.success("تم تحديث التصنيف بنجاح");
+        toast.success(t("categories.updateSuccess"));
       } else {
         await api.post("/categories", { name });
-        toast.success("تمت إضافة التصنيف بنجاح");
+        toast.success(t("categories.addSuccess"));
       }
       setFormOpen(false);
       load();
     } catch (err) {
-      setFormError(apiErrorMessage(err, "تعذّر حفظ التصنيف"));
+      setFormError(apiErrorMessage(err, t("categories.saveError")));
     } finally {
       setSaving(false);
     }
@@ -81,11 +84,11 @@ export function CategoriesPage() {
     setDeleteLoading(true);
     try {
       await api.delete(`/categories/${deleting.id}`);
-      toast.success("تم حذف التصنيف بنجاح");
+      toast.success(t("categories.deleteSuccess"));
       setDeleting(null);
       load();
     } catch (err) {
-      toast.error("تعذّر حذف التصنيف", apiErrorMessage(err));
+      toast.error(t("categories.deleteError"), apiErrorMessage(err));
     } finally {
       setDeleteLoading(false);
     }
@@ -94,19 +97,19 @@ export function CategoriesPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-serif-display text-3xl font-semibold text-ink">التصنيفات</h1>
+        <h1 className="font-serif-display text-3xl font-semibold text-ink">{t("categories.title")}</h1>
         <AppButton icon={<Plus size={16} />} onClick={openAdd}>
-          إضافة تصنيف جديد
+          {t("categories.addNew")}
         </AppButton>
       </div>
 
       {loading ? (
-        <p className="text-sm text-ink-muted">جارِ التحميل...</p>
+        <p className="text-sm text-ink-muted">{t("common.loading")}</p>
       ) : error ? (
         <p className="text-sm text-danger-text">{error}</p>
       ) : categories.length === 0 ? (
         <p className="rounded-3xl border border-card-border bg-card p-8 text-center text-sm text-ink-muted">
-          لا توجد تصنيفات بعد
+          {t("categories.empty")}
         </p>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -118,21 +121,21 @@ export function CategoriesPage() {
                 </span>
                 <div>
                   <p className="font-bold text-ink">{c.name}</p>
-                  <p className="text-xs text-ink-muted">{c.productsCount} منتج</p>
+                  <p className="text-xs text-ink-muted">{t("categories.productsCount", { count: c.productsCount })}</p>
                 </div>
               </div>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => openEdit(c)}
                   className="rounded-full p-2 text-ink hover:bg-sidebar-hover"
-                  aria-label="تعديل"
+                  aria-label={t("products.edit")}
                 >
                   <Pencil size={16} />
                 </button>
                 <button
                   onClick={() => setDeleting(c)}
                   className="rounded-full p-2 text-danger-text hover:bg-danger-bg"
-                  aria-label="حذف"
+                  aria-label={t("products.delete")}
                 >
                   <Trash2 size={16} />
                 </button>
@@ -142,18 +145,23 @@ export function CategoriesPage() {
         </div>
       )}
 
-      <AppDialog open={formOpen} onOpenChange={setFormOpen} title={editing ? "تعديل التصنيف" : "إضافة تصنيف جديد"} widthClass="max-w-sm">
+      <AppDialog
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        title={editing ? t("categories.editTitle") : t("categories.addNew")}
+        widthClass="max-w-sm"
+      >
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <FieldWrapper label="اسم التصنيف" required>
+          <FieldWrapper label={t("categories.nameLabel")} required>
             <TextInput value={name} onChange={(e) => setName(e.target.value)} required maxLength={60} autoFocus />
           </FieldWrapper>
           {formError && <p className="text-sm text-danger-text">{formError}</p>}
           <div className="mt-2 flex justify-end gap-2">
             <AppButton type="button" variant="secondary" onClick={() => setFormOpen(false)}>
-              إلغاء
+              {t("common.cancel")}
             </AppButton>
             <AppButton type="submit" disabled={saving}>
-              {saving ? "جارِ الحفظ..." : "حفظ"}
+              {saving ? t("common.saving") : t("common.save")}
             </AppButton>
           </div>
         </form>
@@ -162,8 +170,8 @@ export function CategoriesPage() {
       <ConfirmDialog
         open={!!deleting}
         onOpenChange={(open) => !open && setDeleting(null)}
-        title="حذف التصنيف"
-        description={`هل أنت متأكد من حذف تصنيف "${deleting?.name}"؟`}
+        title={t("categories.deleteTitle")}
+        description={t("categories.deleteConfirm", { name: deleting?.name ?? "" })}
         onConfirm={confirmDelete}
         isLoading={deleteLoading}
       />

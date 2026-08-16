@@ -12,29 +12,31 @@ import { ProductFormDialog } from "../components/products/ProductFormDialog";
 import { ProductViewDialog } from "../components/products/ProductViewDialog";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { useAppToast } from "../components/ui/Toast";
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("ar-SA", { year: "numeric", month: "2-digit", day: "2-digit" });
-}
+import { useLanguage } from "../i18n/LanguageContext";
 
 type SortColumn = "code" | "name" | "categoryName" | "quantity" | "price" | "stockStatus" | "createdAt";
 type SortDirection = "asc" | "desc";
 
 const STATUS_RANK: Record<StockStatus, number> = { available: 0, low: 1, out: 2 };
 
-const columns: { key: SortColumn; label: string }[] = [
-  { key: "code", label: "الكود" },
-  { key: "name", label: "اسم المنتج" },
-  { key: "categoryName", label: "التصنيف" },
-  { key: "quantity", label: "الكمية" },
-  { key: "price", label: "السعر" },
-  { key: "stockStatus", label: "الحالة" },
-  { key: "createdAt", label: "تاريخ الإضافة" },
-];
-
 export function ProductsPage() {
+  const { t, locale } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   const toast = useAppToast();
+
+  function formatDate(iso: string) {
+    return new Date(iso).toLocaleDateString(locale, { year: "numeric", month: "2-digit", day: "2-digit" });
+  }
+
+  const columns: { key: SortColumn; label: string }[] = [
+    { key: "code", label: t("products.col.code") },
+    { key: "name", label: t("products.col.name") },
+    { key: "categoryName", label: t("products.col.category") },
+    { key: "quantity", label: t("products.col.quantity") },
+    { key: "price", label: t("products.col.price") },
+    { key: "stockStatus", label: t("products.col.status") },
+    { key: "createdAt", label: t("products.col.dateAdded") },
+  ];
 
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -73,7 +75,7 @@ export function ProductsPage() {
       });
       setProducts(data);
     } catch (err) {
-      setError(apiErrorMessage(err, "تعذّر تحميل المنتجات"));
+      setError(apiErrorMessage(err, t("products.loadError")));
     } finally {
       setLoading(false);
     }
@@ -142,23 +144,23 @@ export function ProductsPage() {
           diff = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
           break;
         default:
-          diff = a[sortBy].localeCompare(b[sortBy], "ar");
+          diff = a[sortBy].localeCompare(b[sortBy], locale);
       }
       return sortDir === "asc" ? diff : -diff;
     });
     return sorted;
-  }, [products, sortBy, sortDir]);
+  }, [products, sortBy, sortDir, locale]);
 
   const categoryOptions = useMemo(
-    () => [{ value: "all", label: "جميع التصنيفات" }, ...categories.map((c) => ({ value: c.id, label: c.name }))],
-    [categories]
+    () => [{ value: "all", label: t("products.allCategories") }, ...categories.map((c) => ({ value: c.id, label: c.name }))],
+    [categories, t]
   );
 
   const stockOptions = [
-    { value: "all", label: "كل حالات المخزون" },
-    { value: "available", label: "متوفر" },
-    { value: "low", label: "منخفض" },
-    { value: "out", label: "نفد المخزون" },
+    { value: "all", label: t("products.allStockStatus") },
+    { value: "available", label: t("stockStatus.available") },
+    { value: "low", label: t("stockStatus.low") },
+    { value: "out", label: t("stockStatus.out") },
   ];
 
   function openAddForm() {
@@ -176,11 +178,11 @@ export function ProductsPage() {
     setDeleteLoading(true);
     try {
       await api.delete(`/products/${deletingProduct.id}`);
-      toast.success("تم حذف المنتج بنجاح");
+      toast.success(t("products.deleteSuccess"));
       setDeletingProduct(null);
       loadProducts();
     } catch (err) {
-      toast.error("تعذّر حذف المنتج", apiErrorMessage(err));
+      toast.error(t("products.deleteError"), apiErrorMessage(err));
     } finally {
       setDeleteLoading(false);
     }
@@ -189,21 +191,21 @@ export function ProductsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-serif-display text-3xl font-semibold text-ink">المنتجات</h1>
+        <h1 className="font-serif-display text-3xl font-semibold text-ink">{t("products.title")}</h1>
         <AppButton icon={<Plus size={16} />} onClick={openAddForm}>
-          إضافة منتج جديد
+          {t("products.addNew")}
         </AppButton>
       </div>
 
       <div className="flex flex-col gap-3 rounded-3xl border border-card-border bg-card p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <form onSubmit={submitSearch} className="relative flex-1">
-            <Search size={16} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-ink-muted" />
+            <Search size={16} className="pointer-events-none absolute end-4 top-1/2 -translate-y-1/2 text-ink-muted" />
             <TextInput
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="بحث عن منتج بالاسم أو الكود..."
-              className="w-full rounded-full ps-10 pe-4"
+              placeholder={t("products.searchPlaceholder")}
+              className="w-full rounded-full pe-10 ps-4"
             />
           </form>
           <AppSelect
@@ -221,7 +223,7 @@ export function ProductsPage() {
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <label className="flex flex-1 items-center gap-2 text-sm text-ink-muted">
-            من تاريخ
+            {t("products.dateFrom")}
             <TextInput
               type="date"
               value={dateFrom}
@@ -230,7 +232,7 @@ export function ProductsPage() {
             />
           </label>
           <label className="flex flex-1 items-center gap-2 text-sm text-ink-muted">
-            إلى تاريخ
+            {t("products.dateTo")}
             <TextInput
               type="date"
               value={dateTo}
@@ -244,7 +246,7 @@ export function ProductsPage() {
               onClick={() => updateParams({ dateFrom: "", dateTo: "" })}
               className="text-sm font-medium text-ink underline decoration-card-border underline-offset-4 hover:decoration-ink sm:shrink-0"
             >
-              مسح تاريخ البحث
+              {t("products.clearDateFilter")}
             </button>
           )}
         </div>
@@ -252,18 +254,18 @@ export function ProductsPage() {
 
       <div className="overflow-hidden rounded-3xl border border-card-border bg-card">
         {loading ? (
-          <p className="p-8 text-center text-sm text-ink-muted">جارِ التحميل...</p>
+          <p className="p-8 text-center text-sm text-ink-muted">{t("common.loading")}</p>
         ) : error ? (
           <p className="p-8 text-center text-sm text-danger-text">{error}</p>
         ) : products.length === 0 ? (
-          <p className="p-8 text-center text-sm text-ink-muted">لا توجد منتجات مطابقة</p>
+          <p className="p-8 text-center text-sm text-ink-muted">{t("products.noMatches")}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-surface">
                 <tr className="text-ink-muted">
                   {columns.map((col) => (
-                    <th key={col.key} className="px-4 py-3 text-right font-medium">
+                    <th key={col.key} className="px-4 py-3 text-start font-medium">
                       <button
                         type="button"
                         onClick={() => toggleSort(col.key)}
@@ -282,7 +284,7 @@ export function ProductsPage() {
                       </button>
                     </th>
                   ))}
-                  <th className="px-4 py-3 text-right font-medium">إجراءات</th>
+                  <th className="px-4 py-3 text-start font-medium">{t("products.actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -292,7 +294,9 @@ export function ProductsPage() {
                     <td className="px-4 py-3 font-semibold text-ink">{p.name}</td>
                     <td className="px-4 py-3 text-ink-muted">{p.categoryName}</td>
                     <td className="px-4 py-3 text-ink">{p.quantity}</td>
-                    <td className="px-4 py-3 text-ink">{p.price.toFixed(2)} ر.س</td>
+                    <td className="px-4 py-3 text-ink">
+                      {p.price.toFixed(2)} {t("common.currency")}
+                    </td>
                     <td className="px-4 py-3">
                       <StockBadge status={p.stockStatus} />
                     </td>
@@ -302,21 +306,21 @@ export function ProductsPage() {
                         <button
                           onClick={() => setViewingProduct(p)}
                           className="rounded-full p-2 text-ink-muted hover:bg-sidebar-hover hover:text-ink"
-                          aria-label="عرض"
+                          aria-label={t("products.view")}
                         >
                           <Eye size={16} />
                         </button>
                         <button
                           onClick={() => openEditForm(p)}
                           className="rounded-full p-2 text-ink hover:bg-sidebar-hover"
-                          aria-label="تعديل"
+                          aria-label={t("products.edit")}
                         >
                           <Pencil size={16} />
                         </button>
                         <button
                           onClick={() => setDeletingProduct(p)}
                           className="rounded-full p-2 text-danger-text hover:bg-danger-bg"
-                          aria-label="حذف"
+                          aria-label={t("products.delete")}
                         >
                           <Trash2 size={16} />
                         </button>
@@ -346,8 +350,8 @@ export function ProductsPage() {
       <ConfirmDialog
         open={!!deletingProduct}
         onOpenChange={(open) => !open && setDeletingProduct(null)}
-        title="حذف المنتج"
-        description={`هل أنت متأكد من حذف المنتج "${deletingProduct?.name}"؟ لا يمكن التراجع عن هذا الإجراء.`}
+        title={t("products.deleteTitle")}
+        description={t("products.deleteConfirm", { name: deletingProduct?.name ?? "" })}
         onConfirm={confirmDelete}
         isLoading={deleteLoading}
       />

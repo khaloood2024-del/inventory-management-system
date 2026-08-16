@@ -5,15 +5,18 @@ import "./index.css";
 import App from "./App.tsx";
 import { AuthProvider } from "./context/AuthContext";
 import { AppToastProvider } from "./components/ui/Toast";
+import { LanguageProvider } from "./i18n/LanguageContext";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <AppToastProvider>
-          <App />
-        </AppToastProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <LanguageProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <AppToastProvider>
+            <App />
+          </AppToastProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </LanguageProvider>
   </StrictMode>
 );

@@ -1,4 +1,5 @@
 import { AlertDialog } from "@base-ui/react/alert-dialog";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -17,12 +18,13 @@ export function ConfirmDialog({
   onOpenChange,
   title,
   description,
-  confirmLabel = "تأكيد",
-  cancelLabel = "إلغاء",
+  confirmLabel,
+  cancelLabel,
   danger = true,
   onConfirm,
   isLoading,
 }: ConfirmDialogProps) {
+  const { t } = useLanguage();
   return (
     <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
       <AlertDialog.Portal>
@@ -40,7 +42,7 @@ export function ConfirmDialog({
               onClick={() => onOpenChange(false)}
               className="rounded-full border border-card-border px-4 py-2 text-sm font-medium text-ink hover:bg-sidebar-hover"
             >
-              {cancelLabel}
+              {cancelLabel ?? t("common.cancel")}
             </button>
             <button
               type="button"
@@ -50,7 +52,7 @@ export function ConfirmDialog({
                 danger ? "bg-danger-text hover:bg-red-700" : "bg-primary-500 hover:bg-primary-600"
               }`}
             >
-              {isLoading ? "جارِ التنفيذ..." : confirmLabel}
+              {isLoading ? t("common.processing") : confirmLabel ?? t("common.confirm")}
             </button>
           </div>
         </AlertDialog.Popup>

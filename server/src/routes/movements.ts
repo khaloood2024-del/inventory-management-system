@@ -3,6 +3,7 @@ import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { requireAuth } from "../middleware/auth";
+import { t, getLang, Lang } from "../lib/i18n";
 
 const router = Router();
 router.use(requireAuth);
@@ -44,26 +45,29 @@ router.get("/", async (req, res) => {
   );
 });
 
-const movementSchema = z.object({
-  productId: z.string().min(1, "المنتج مطلوب"),
-  type: z.enum(["IN", "OUT"], { message: "نوع الحركة غير صحيح" }),
-  quantity: z.coerce.number().int().positive("الكمية يجب أن تكون رقماً أكبر من صفر"),
-  reason: z.string().trim().min(1, "سبب الحركة مطلوب").max(200, "سبب الحركة طويل جداً"),
-});
+function buildMovementSchema(lang: Lang) {
+  return z.object({
+    productId: z.string().min(1, t("movementProductRequired", lang)),
+    type: z.enum(["IN", "OUT"], { message: t("invalidMovementType", lang) }),
+    quantity: z.coerce.number().int().positive(t("quantityGreaterThanZero", lang)),
+    reason: z.string().trim().min(1, t("movementReasonRequired", lang)).max(200, t("movementReasonTooLong", lang)),
+  });
+}
 
 router.post("/", async (req, res) => {
-  const parsed = movementSchema.safeParse(req.body);
+  const lang = getLang(req);
+  const parsed = buildMovementSchema(lang).safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: parsed.error.issues[0].message });
   }
   const { productId, type, quantity, reason } = parsed.data;
 
   const product = await prisma.product.findUnique({ where: { id: productId } });
-  if (!product) return res.status(404).json({ error: "المنتج غير موجود" });
+  if (!product) return res.status(404).json({ error: t("productNotFound", lang) });
 
   if (type === "OUT" && quantity > product.quantity) {
     return res.status(400).json({
-      error: `لا يمكن سحب كمية أكبر من المتوفر (المتوفر حالياً: ${product.quantity})`,
+      error: t("cannotWithdrawMore", lang, { available: product.quantity }),
     });
   }
 

@@ -2,6 +2,7 @@ import { AppDialog } from "../ui/Dialog";
 import { StockBadge } from "../ui/Badge";
 import type { ReactNode } from "react";
 import type { Product } from "../../lib/types";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 export function ProductViewDialog({
   product,
@@ -10,17 +11,19 @@ export function ProductViewDialog({
   product: Product | null;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t, locale } = useLanguage();
+
   if (!product) return null;
 
   const rows: { label: string; value: ReactNode }[] = [
-    { label: "كود المنتج", value: product.code },
-    { label: "التصنيف", value: product.categoryName },
-    { label: "السعر", value: `${product.price.toFixed(2)} ر.س` },
-    { label: "الكمية المتوفرة", value: product.quantity },
-    { label: "الحالة", value: <StockBadge status={product.stockStatus} /> },
+    { label: t("productView.code"), value: product.code },
+    { label: t("productView.category"), value: product.categoryName },
+    { label: t("productView.price"), value: `${product.price.toFixed(2)} ${t("common.currency")}` },
+    { label: t("productView.quantity"), value: product.quantity },
+    { label: t("productView.status"), value: <StockBadge status={product.stockStatus} /> },
     {
-      label: "تاريخ الإضافة",
-      value: new Date(product.createdAt).toLocaleDateString("ar-SA"),
+      label: t("productView.dateAdded"),
+      value: new Date(product.createdAt).toLocaleDateString(locale),
     },
   ];
 
@@ -35,7 +38,7 @@ export function ProductViewDialog({
         ))}
         {product.description && (
           <div className="pt-1">
-            <p className="mb-1 text-sm text-ink-muted">الوصف</p>
+            <p className="mb-1 text-sm text-ink-muted">{t("productView.description")}</p>
             <p className="text-sm text-ink">{product.description}</p>
           </div>
         )}
