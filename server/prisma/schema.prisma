@@ -11,12 +11,13 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// role: "ADMIN" أو "EMPLOYEE" — نص بدل enum لضمان التوافق مع أي قاعدة بيانات
 model User {
   id        String   @id @default(cuid())
   username  String   @unique
   password  String
   name      String
-  role      String   @default("مدير النظام")
+  role      String   @default("EMPLOYEE")
   createdAt DateTime @default(now())
 }
 

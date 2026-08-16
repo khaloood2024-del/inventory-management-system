@@ -13,9 +13,12 @@ async function main() {
   if (!existingAdmin) {
     const hashed = await bcrypt.hash(adminPassword, 10);
     await prisma.user.create({
-      data: { username: adminUsername, password: hashed, name: adminName, role: "مدير النظام" },
+      data: { username: adminUsername, password: hashed, name: adminName, role: "ADMIN" },
     });
     console.log(`تم إنشاء المستخدم المدير: ${adminUsername}`);
+  } else if (existingAdmin.role !== "ADMIN") {
+    await prisma.user.update({ where: { id: existingAdmin.id }, data: { role: "ADMIN" } });
+    console.log(`تم تحديث صلاحية المستخدم ${adminUsername} إلى ADMIN`);
   }
 
   const categoryNames = ["إلكترونيات", "إكسسوارات", "أدوات مكتبية"];

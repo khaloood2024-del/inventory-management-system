@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { t, getLang } from "../lib/i18n";
+import { prisma } from "../lib/prisma";
 
 export interface AuthedRequest extends Request {
   userId?: string;
@@ -22,4 +23,13 @@ export function requireAuth(req: AuthedRequest, res: Response, next: NextFunctio
   } catch {
     return res.status(401).json({ error: t("invalidSession", lang) });
   }
+}
+
+export async function requireAdmin(req: AuthedRequest, res: Response, next: NextFunction) {
+  const lang = getLang(req);
+  const user = await prisma.user.findUnique({ where: { id: req.userId } });
+  if (!user || user.role !== "ADMIN") {
+    return res.status(403).json({ error: t("forbidden", lang) });
+  }
+  next();
 }

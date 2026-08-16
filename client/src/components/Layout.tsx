@@ -14,6 +14,7 @@ import {
   PanelRightClose,
   PanelRightOpen,
   Languages,
+  Users,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../lib/api";
@@ -38,6 +39,7 @@ export function Layout() {
     { to: "/products", label: t("nav.products"), icon: Package },
     { to: "/categories", label: t("nav.categories"), icon: FolderTree },
     { to: "/movements", label: t("nav.movements"), icon: ArrowLeftRight },
+    ...(user?.role === "ADMIN" ? [{ to: "/users", label: t("nav.users"), icon: Users }] : []),
   ];
 
   useEffect(() => {
@@ -236,7 +238,7 @@ export function Layout() {
               </span>
               <div className="hidden text-start sm:block">
                 <p className="text-sm font-semibold text-ink">{user?.name}</p>
-                <p className="text-xs text-ink-muted">{user?.role}</p>
+                <p className="text-xs text-ink-muted">{user?.role ? t(`role.${user.role}`) : ""}</p>
               </div>
             </div>
           </div>

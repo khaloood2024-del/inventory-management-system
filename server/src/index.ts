@@ -7,6 +7,7 @@ import categoryRoutes from "./routes/categories";
 import productRoutes from "./routes/products";
 import movementRoutes from "./routes/movements";
 import dashboardRoutes from "./routes/dashboard";
+import userRoutes from "./routes/users";
 import { t, getLang } from "./lib/i18n";
 
 const app = express();
@@ -21,6 +22,7 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/movements", movementRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/users", userRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: t("routeNotFound", getLang(req)) });

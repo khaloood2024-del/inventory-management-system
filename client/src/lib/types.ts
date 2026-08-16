@@ -1,8 +1,18 @@
+export type Role = "ADMIN" | "EMPLOYEE";
+
 export interface User {
   id: string;
   username: string;
   name: string;
-  role: string;
+  role: Role;
+}
+
+export interface UserAccount {
+  id: string;
+  username: string;
+  name: string;
+  role: Role;
+  createdAt: string;
 }
 
 export interface Category {

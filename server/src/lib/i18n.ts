@@ -46,8 +46,25 @@ const messages = {
 
   unauthorized: { ar: "غير مصرح، الرجاء تسجيل الدخول", en: "Unauthorized, please sign in" },
   invalidSession: { ar: "جلسة الدخول غير صالحة أو منتهية", en: "Your session is invalid or has expired" },
+  forbidden: { ar: "ليس لديك صلاحية للقيام بهذا الإجراء", en: "You don't have permission to do this" },
   routeNotFound: { ar: "المسار غير موجود", en: "Route not found" },
   serverError: { ar: "حدث خطأ غير متوقع في الخادم", en: "An unexpected server error occurred" },
+
+  usernameTooLong: { ar: "اسم المستخدم طويل جداً", en: "Username is too long" },
+  nameRequired: { ar: "الاسم مطلوب", en: "Name is required" },
+  nameTooLong: { ar: "الاسم طويل جداً", en: "Name is too long" },
+  passwordTooShort: { ar: "كلمة المرور يجب أن تكون 6 أحرف على الأقل", en: "Password must be at least 6 characters" },
+  invalidRole: { ar: "الصلاحية غير صحيحة", en: "Invalid role" },
+  usernameExists: { ar: "اسم المستخدم مستخدم مسبقاً", en: "This username is already taken" },
+  cannotDeleteSelf: { ar: "لا يمكنك حذف حسابك الخاص", en: "You cannot delete your own account" },
+  cannotDeleteLastAdmin: {
+    ar: "لا يمكن حذف هذا المستخدم لأنه المدير الوحيد المتبقي",
+    en: "Cannot delete this user — they are the last remaining admin",
+  },
+  cannotDemoteLastAdmin: {
+    ar: "لا يمكن تغيير صلاحية هذا المستخدم لأنه المدير الوحيد المتبقي",
+    en: "Cannot change this user's role — they are the last remaining admin",
+  },
 } as const;
 
 export type MessageKey = keyof typeof messages;
