@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import {
   LayoutDashboard,
@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../lib/api";
-import type { DashboardStats } from "../lib/types";
+import type { DashboardStats, Product } from "../lib/types";
 import { NotificationsPopover } from "./NotificationsPopover";
 
 const navItems = [
@@ -32,7 +32,10 @@ export function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem("sidebarCollapsed") === "1");
   const [search, setSearch] = useState("");
+  const [suggestions, setSuggestions] = useState<Product[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const searchBoxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     api
@@ -45,9 +48,41 @@ export function Layout() {
     localStorage.setItem("sidebarCollapsed", collapsed ? "1" : "0");
   }, [collapsed]);
 
+  useEffect(() => {
+    const query = search.trim();
+    if (!query) {
+      setSuggestions([]);
+      return;
+    }
+    const timeout = setTimeout(() => {
+      api
+        .get("/products", { params: { search: query } })
+        .then(({ data }: { data: Product[] }) => setSuggestions(data.slice(0, 6)))
+        .catch(() => setSuggestions([]));
+    }, 250);
+    return () => clearTimeout(timeout);
+  }, [search]);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (searchBoxRef.current && !searchBoxRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   function submitSearch(e: FormEvent) {
     e.preventDefault();
+    setShowSuggestions(false);
     navigate(`/products?search=${encodeURIComponent(search)}`);
+  }
+
+  function goToSuggestion(p: Product) {
+    setShowSuggestions(false);
+    setSearch("");
+    navigate(`/products?search=${encodeURIComponent(p.code)}`);
   }
 
   return (
@@ -64,8 +99,12 @@ export function Layout() {
           collapsed ? "md:w-20" : "md:w-72"
         } w-72 ${sidebarOpen ? "flex translate-x-0" : "hidden -translate-x-full md:flex"}`}
       >
-        <div className="flex items-center justify-between gap-2 border-b border-sidebar-border px-5 py-6">
-          <div className={`flex items-center gap-2.5 ${collapsed ? "md:w-full md:justify-center" : ""}`}>
+        <div
+          className={`flex items-center justify-between gap-2 border-b border-sidebar-border px-5 py-6 ${
+            collapsed ? "md:flex-col md:justify-center md:gap-3 md:px-2" : ""
+          }`}
+        >
+          <div className={`flex items-center gap-2.5 ${collapsed ? "md:justify-center" : ""}`}>
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary-500 text-white">
               <Boxes size={18} />
             </span>
@@ -73,6 +112,14 @@ export function Layout() {
               إدارة المخزون
             </span>
           </div>
+          <button
+            onClick={() => setCollapsed((c) => !c)}
+            title={collapsed ? "توسيع القائمة" : "طي القائمة"}
+            aria-label={collapsed ? "توسيع القائمة" : "طي القائمة"}
+            className="hidden shrink-0 rounded-full p-2 text-ink-muted transition hover:bg-sidebar-hover hover:text-ink md:flex"
+          >
+            {collapsed ? <PanelRightOpen size={18} /> : <PanelRightClose size={18} />}
+          </button>
           <button
             className="text-ink-muted hover:text-ink md:hidden"
             onClick={() => setSidebarOpen(false)}
@@ -107,16 +154,6 @@ export function Layout() {
 
         <div className="border-t border-sidebar-border p-4">
           <button
-            onClick={() => setCollapsed((c) => !c)}
-            title={collapsed ? "توسيع القائمة" : "طي القائمة"}
-            className={`mb-1 hidden w-full items-center gap-3 rounded-full px-4 py-2.5 text-sm font-medium text-ink-muted transition hover:bg-sidebar-hover hover:text-ink md:flex ${
-              collapsed ? "md:justify-center md:px-0" : ""
-            }`}
-          >
-            {collapsed ? <PanelRightOpen size={18} /> : <PanelRightClose size={18} />}
-            <span className={collapsed ? "md:hidden" : ""}>طي القائمة</span>
-          </button>
-          <button
             onClick={logout}
             title={collapsed ? "تسجيل الخروج" : undefined}
             className={`flex w-full items-center gap-3 rounded-full px-4 py-2.5 text-sm font-medium text-ink-muted transition hover:bg-sidebar-hover hover:text-ink ${
@@ -138,18 +175,46 @@ export function Layout() {
             >
               <Menu size={22} />
             </button>
-            <form onSubmit={submitSearch} className="relative hidden sm:block">
-              <Search
-                size={16}
-                className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-ink-muted"
-              />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="بحث عن منتج أو كود..."
-                className="w-56 rounded-full border border-card-border bg-card py-2.5 ps-10 pe-4 text-sm outline-none focus:border-primary-400 md:w-72"
-              />
-            </form>
+            <div ref={searchBoxRef} className="relative hidden sm:block">
+              <form onSubmit={submitSearch}>
+                <Search
+                  size={16}
+                  className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-ink-muted"
+                />
+                <input
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  onFocus={() => setShowSuggestions(true)}
+                  onKeyDown={(e) => e.key === "Escape" && setShowSuggestions(false)}
+                  placeholder="بحث عن منتج أو كود..."
+                  className="w-56 rounded-full border border-card-border bg-card py-2.5 ps-10 pe-4 text-sm outline-none focus:border-primary-400 md:w-72"
+                  autoComplete="off"
+                />
+              </form>
+
+              {showSuggestions && search.trim() && (
+                <div className="absolute top-full z-50 mt-2 w-full overflow-hidden rounded-2xl border border-card-border bg-card shadow-[0_8px_30px_rgba(32,31,24,0.1)]">
+                  {suggestions.length === 0 ? (
+                    <p className="p-3 text-center text-sm text-ink-muted">لا توجد نتائج مطابقة</p>
+                  ) : (
+                    suggestions.map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => goToSuggestion(p)}
+                        className="flex w-full items-center justify-between gap-2 px-4 py-2.5 text-right text-sm transition hover:bg-sidebar-hover"
+                      >
+                        <span className="truncate font-medium text-ink">{p.name}</span>
+                        <span className="shrink-0 font-mono text-xs text-ink-muted">{p.code}</span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center gap-3 sm:gap-4">

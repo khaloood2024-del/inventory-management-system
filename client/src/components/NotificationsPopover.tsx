@@ -1,10 +1,22 @@
 import { Popover } from "@base-ui/react/popover";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { AlertTriangle, Bell, PackageX } from "lucide-react";
 import type { DashboardStats } from "../lib/types";
 
 export function NotificationsPopover({ stats }: { stats: DashboardStats | null }) {
-  const alertCount = stats ? stats.lowStockCount + stats.outOfStockCount : 0;
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
+  const totalAlertCount = stats ? stats.lowStockCount + stats.outOfStockCount : 0;
+  const alertCount = Math.max(0, totalAlertCount - dismissedIds.size);
+  const visibleAlerts = stats?.lowStockProducts.filter((p) => !dismissedIds.has(p.id)) ?? [];
+
+  useEffect(() => {
+    setDismissedIds(new Set());
+  }, [stats?.lowStockProducts]);
+
+  function dismiss(id: string) {
+    setDismissedIds((prev) => new Set(prev).add(id));
+  }
 
   return (
     <Popover.Root>
@@ -31,14 +43,15 @@ export function NotificationsPopover({ stats }: { stats: DashboardStats | null }
               )}
             </div>
 
-            {!stats || alertCount === 0 ? (
+            {!stats || visibleAlerts.length === 0 ? (
               <p className="px-2 py-6 text-center text-sm text-ink-muted">لا توجد تنبيهات حالياً</p>
             ) : (
               <div className="mt-1 flex max-h-80 flex-col gap-1 overflow-y-auto">
-                {stats.lowStockProducts.map((p) => (
+                {visibleAlerts.map((p) => (
                   <Popover.Close
                     key={p.id}
                     nativeButton={false}
+                    onClick={() => dismiss(p.id)}
                     render={
                       <Link
                         to={`/products?search=${encodeURIComponent(p.code)}`}
