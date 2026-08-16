@@ -10,14 +10,14 @@ function ToastList() {
           <Toast.Root
             key={toast.id}
             toast={toast}
-            className={`pointer-events-auto rounded-xl border px-4 py-3 shadow-lg transition-all data-[starting-style]:translate-y-2 data-[starting-style]:opacity-0 data-[ending-style]:opacity-0 ${
+            className={`pointer-events-auto rounded-2xl border px-4 py-3 bg-card shadow-[0_8px_24px_rgba(32,31,24,0.1)] transition-all data-[starting-style]:translate-y-2 data-[starting-style]:opacity-0 data-[ending-style]:opacity-0 ${
               toast.type === "error"
-                ? "border-danger-text/20 bg-white text-danger-text"
-                : "border-success-text/20 bg-white text-success-text"
+                ? "border-danger-text/20 text-danger-text"
+                : "border-success-text/20 text-success-text"
             }`}
           >
-            <Toast.Title className="text-sm font-bold text-gray-800" />
-            <Toast.Description className="mt-0.5 text-sm text-gray-500" />
+            <Toast.Title className="text-sm font-bold text-ink" />
+            <Toast.Description className="mt-0.5 text-sm text-ink-muted" />
           </Toast.Root>
         ))}
       </Toast.Viewport>

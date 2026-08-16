@@ -94,44 +94,44 @@ export function CategoriesPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-bold text-gray-900">التصنيفات</h1>
+        <h1 className="font-serif-display text-3xl font-semibold text-ink">التصنيفات</h1>
         <AppButton icon={<Plus size={16} />} onClick={openAdd}>
           إضافة تصنيف جديد
         </AppButton>
       </div>
 
       {loading ? (
-        <p className="text-sm text-gray-400">جارِ التحميل...</p>
+        <p className="text-sm text-ink-muted">جارِ التحميل...</p>
       ) : error ? (
         <p className="text-sm text-danger-text">{error}</p>
       ) : categories.length === 0 ? (
-        <p className="rounded-2xl border border-gray-100 bg-white p-8 text-center text-sm text-gray-400">
+        <p className="rounded-3xl border border-card-border bg-card p-8 text-center text-sm text-ink-muted">
           لا توجد تصنيفات بعد
         </p>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {categories.map((c) => (
-            <div key={c.id} className="flex items-center justify-between gap-3 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+            <div key={c.id} className="flex items-center justify-between gap-3 rounded-3xl border border-card-border bg-card p-5">
               <div className="flex items-center gap-3">
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
+                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-bg text-teal-text">
                   <FolderTree size={20} />
                 </span>
                 <div>
-                  <p className="font-bold text-gray-800">{c.name}</p>
-                  <p className="text-xs text-gray-400">{c.productsCount} منتج</p>
+                  <p className="font-bold text-ink">{c.name}</p>
+                  <p className="text-xs text-ink-muted">{c.productsCount} منتج</p>
                 </div>
               </div>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => openEdit(c)}
-                  className="rounded-lg p-2 text-primary-500 hover:bg-primary-50"
+                  className="rounded-full p-2 text-ink hover:bg-sidebar-hover"
                   aria-label="تعديل"
                 >
                   <Pencil size={16} />
                 </button>
                 <button
                   onClick={() => setDeleting(c)}
-                  className="rounded-lg p-2 text-danger-text hover:bg-danger-bg"
+                  className="rounded-full p-2 text-danger-text hover:bg-danger-bg"
                   aria-label="حذف"
                 >
                   <Trash2 size={16} />

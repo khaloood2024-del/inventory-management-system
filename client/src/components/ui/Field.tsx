@@ -10,7 +10,7 @@ interface FieldWrapperProps {
 export function FieldWrapper({ label, error, required, children }: FieldWrapperProps) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-sm font-medium text-gray-700">
+      <label className="text-sm font-medium text-ink">
         {label} {required && <span className="text-danger-text">*</span>}
       </label>
       {children}
@@ -20,7 +20,7 @@ export function FieldWrapper({ label, error, required, children }: FieldWrapperP
 }
 
 const inputClass =
-  "rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 outline-none transition focus:border-primary-400 focus:ring-2 focus:ring-primary-100 disabled:bg-gray-50";
+  "rounded-2xl border border-card-border bg-card px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-primary-400 disabled:bg-sidebar-hover";
 
 export function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={`${inputClass} ${props.className ?? ""}`} />;

@@ -18,24 +18,24 @@ export function AppSelect({ value, onChange, options, placeholder, className }: 
   return (
     <BaseSelect.Root value={value} onValueChange={(v) => onChange(v as string)}>
       <BaseSelect.Trigger
-        className={`flex items-center justify-between gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 ${className ?? ""}`}
+        className={`flex items-center justify-between gap-2 rounded-full border border-card-border bg-card px-4 py-2.5 text-sm font-medium text-ink outline-none focus:border-primary-400 ${className ?? ""}`}
       >
         <BaseSelect.Value placeholder={placeholder}>
           {(v: string) => options.find((opt) => opt.value === v)?.label ?? placeholder}
         </BaseSelect.Value>
         <BaseSelect.Icon>
-          <ChevronDown size={16} className="text-gray-400" />
+          <ChevronDown size={16} className="text-ink-muted" />
         </BaseSelect.Icon>
       </BaseSelect.Trigger>
       <BaseSelect.Portal>
         <BaseSelect.Positioner className="z-50" sideOffset={4}>
-          <BaseSelect.Popup className="max-h-64 overflow-y-auto rounded-lg border border-gray-100 bg-white p-1 shadow-xl outline-none min-w-[var(--anchor-width)]">
+          <BaseSelect.Popup className="max-h-64 overflow-y-auto rounded-2xl border border-card-border bg-card p-1.5 outline-none min-w-[var(--anchor-width)]">
             <BaseSelect.List>
               {options.map((opt) => (
                 <BaseSelect.Item
                   key={opt.value}
                   value={opt.value}
-                  className="flex cursor-pointer items-center justify-between gap-2 rounded-md px-3 py-2 text-sm text-gray-700 outline-none data-[highlighted]:bg-primary-50 data-[highlighted]:text-primary-700"
+                  className="flex cursor-pointer items-center justify-between gap-2 rounded-full px-3 py-2 text-sm text-ink outline-none data-[highlighted]:bg-sidebar-hover"
                 >
                   <BaseSelect.ItemText>{opt.label}</BaseSelect.ItemText>
                   <BaseSelect.ItemIndicator>

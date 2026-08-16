@@ -16,10 +16,12 @@ function stockStatusOf(quantity: number): "out" | "low" | "available" {
 }
 
 router.get("/", async (req, res) => {
-  const { search, categoryId, stockStatus } = req.query as {
+  const { search, categoryId, stockStatus, dateFrom, dateTo } = req.query as {
     search?: string;
     categoryId?: string;
     stockStatus?: string;
+    dateFrom?: string;
+    dateTo?: string;
   };
 
   const where: Prisma.ProductWhereInput = {};
@@ -38,6 +40,12 @@ router.get("/", async (req, res) => {
   if (stockStatus === "out") where.quantity = { lte: 0 };
   else if (stockStatus === "low") where.quantity = { gt: 0, lt: LOW_STOCK_THRESHOLD };
   else if (stockStatus === "available") where.quantity = { gte: LOW_STOCK_THRESHOLD };
+
+  if (dateFrom || dateTo) {
+    where.createdAt = {};
+    if (dateFrom) where.createdAt.gte = new Date(`${dateFrom}T00:00:00.000Z`);
+    if (dateTo) where.createdAt.lte = new Date(`${dateTo}T23:59:59.999Z`);
+  }
 
   const products = await prisma.product.findMany({
     where,
@@ -103,16 +111,32 @@ router.post("/", async (req, res) => {
   const existingCode = await prisma.product.findUnique({ where: { code: data.code } });
   if (existingCode) return res.status(409).json({ error: "يوجد منتج بنفس الكود مسبقاً" });
 
-  const product = await prisma.product.create({
-    data: {
-      code: data.code,
-      name: data.name,
-      description: data.description || null,
-      price: data.price,
-      quantity: data.quantity,
-      categoryId: data.categoryId,
-    },
+  const product = await prisma.$transaction(async (tx) => {
+    const created = await tx.product.create({
+      data: {
+        code: data.code,
+        name: data.name,
+        description: data.description || null,
+        price: data.price,
+        quantity: data.quantity,
+        categoryId: data.categoryId,
+      },
+    });
+
+    if (data.quantity > 0) {
+      await tx.stockMovement.create({
+        data: {
+          productId: created.id,
+          type: "IN",
+          quantity: data.quantity,
+          reason: "رصيد افتتاحي عند إضافة المنتج",
+        },
+      });
+    }
+
+    return created;
   });
+
   res.status(201).json(product);
 });
 
@@ -134,17 +158,35 @@ router.put("/:id", async (req, res) => {
     return res.status(409).json({ error: "يوجد منتج بنفس الكود مسبقاً" });
   }
 
-  const updated = await prisma.product.update({
-    where: { id: req.params.id },
-    data: {
-      code: data.code,
-      name: data.name,
-      description: data.description || null,
-      price: data.price,
-      quantity: data.quantity,
-      categoryId: data.categoryId,
-    },
+  const quantityDiff = data.quantity - product.quantity;
+
+  const updated = await prisma.$transaction(async (tx) => {
+    const result = await tx.product.update({
+      where: { id: req.params.id },
+      data: {
+        code: data.code,
+        name: data.name,
+        description: data.description || null,
+        price: data.price,
+        quantity: data.quantity,
+        categoryId: data.categoryId,
+      },
+    });
+
+    if (quantityDiff !== 0) {
+      await tx.stockMovement.create({
+        data: {
+          productId: result.id,
+          type: quantityDiff > 0 ? "IN" : "OUT",
+          quantity: Math.abs(quantityDiff),
+          reason: "تعديل يدوي للكمية من صفحة المنتجات",
+        },
+      });
+    }
+
+    return result;
   });
+
   res.json(updated);
 });
 

@@ -29,42 +29,42 @@ export function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-surface px-4">
-      <div className="w-full max-w-sm rounded-2xl border border-gray-100 bg-white p-8 shadow-xl">
-        <div className="mb-6 flex flex-col items-center gap-2 text-center">
+      <div className="w-full max-w-sm rounded-3xl border border-card-border bg-card p-8 shadow-[0_8px_30px_rgba(32,31,24,0.06)]">
+        <div className="mb-7 flex flex-col items-center gap-3 text-center">
           <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-500 text-white">
             <Boxes size={24} />
           </span>
-          <h1 className="text-xl font-bold text-gray-900">إدارة المخزون</h1>
-          <p className="text-sm text-gray-500">سجّل الدخول للمتابعة إلى لوحة التحكم</p>
+          <h1 className="font-serif-display text-2xl font-semibold text-ink">إدارة المخزون</h1>
+          <p className="text-sm text-ink-muted">سجّل الدخول للمتابعة إلى لوحة التحكم</p>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">اسم المستخدم</label>
+            <label className="text-sm font-medium text-ink">اسم المستخدم</label>
             <div className="relative">
-              <User size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <User size={16} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-ink-muted" />
               <TextInput
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="admin"
                 required
                 autoFocus
-                className="w-full pe-9 ps-3"
+                className="w-full rounded-full ps-10 pe-4"
               />
             </div>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">كلمة المرور</label>
+            <label className="text-sm font-medium text-ink">كلمة المرور</label>
             <div className="relative">
-              <Lock size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Lock size={16} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-ink-muted" />
               <TextInput
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                className="w-full pe-9 ps-3"
+                className="w-full rounded-full ps-10 pe-4"
               />
             </div>
           </div>

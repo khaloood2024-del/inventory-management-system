@@ -28,15 +28,15 @@ export function ProductViewDialog({
     <AppDialog open={!!product} onOpenChange={onOpenChange} title={product.name} widthClass="max-w-md">
       <div className="flex flex-col gap-3">
         {rows.map((row) => (
-          <div key={row.label} className="flex items-center justify-between border-b border-gray-50 pb-2 text-sm">
-            <span className="text-gray-400">{row.label}</span>
-            <span className="font-semibold text-gray-800">{row.value}</span>
+          <div key={row.label} className="flex items-center justify-between border-b border-card-border pb-2 text-sm">
+            <span className="text-ink-muted">{row.label}</span>
+            <span className="font-semibold text-ink">{row.value}</span>
           </div>
         ))}
         {product.description && (
           <div className="pt-1">
-            <p className="mb-1 text-sm text-gray-400">الوصف</p>
-            <p className="text-sm text-gray-700">{product.description}</p>
+            <p className="mb-1 text-sm text-ink-muted">الوصف</p>
+            <p className="text-sm text-ink">{product.description}</p>
           </div>
         )}
       </div>

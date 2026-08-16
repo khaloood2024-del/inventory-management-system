@@ -2,29 +2,43 @@
 
 @theme {
   --font-sans: "Cairo", "Segoe UI", sans-serif;
+  --font-serif: "Markazi Text", "Cairo", serif;
 
-  --color-primary-50: #eef0fe;
-  --color-primary-100: #dee2fd;
-  --color-primary-200: #bcc4fb;
-  --color-primary-300: #9aa7f9;
-  --color-primary-400: #7a89f6;
-  --color-primary-500: #5f6cf1;
-  --color-primary-600: #4a54d9;
-  --color-primary-700: #383fab;
-  --color-primary-800: #2a2f82;
-  --color-primary-900: #1f2260;
+  /* لوحة ألوان دافئة محايدة (بديل الأزرق) مستوحاة من التصميم المرجعي */
+  --color-primary-50: #f2f1ec;
+  --color-primary-100: #e4e2d8;
+  --color-primary-200: #c9c5b3;
+  --color-primary-300: #a8a186;
+  --color-primary-400: #6f6a52;
+  --color-primary-500: #201f18;
+  --color-primary-600: #17160f;
+  --color-primary-700: #100f0a;
+  --color-primary-800: #0a0906;
+  --color-primary-900: #050503;
 
-  --color-sidebar: #1b2436;
-  --color-sidebar-hover: #262f45;
-  --color-sidebar-border: #2b3550;
+  --color-ink: #201f18;
+  --color-ink-muted: #837c68;
 
-  --color-surface: #f7f8fc;
-  --color-danger-bg: #fdf1f1;
-  --color-danger-text: #d64545;
-  --color-warning-bg: #fef7e8;
-  --color-warning-text: #b7791f;
-  --color-success-bg: #eefaf1;
-  --color-success-text: #1e9e5a;
+  --color-sidebar: #fdfcf9;
+  --color-sidebar-hover: #f1ede2;
+  --color-sidebar-active: #edE9dc;
+  --color-sidebar-border: #eae5d8;
+
+  --color-surface: #f6f4ee;
+  --color-card: #ffffff;
+  --color-card-border: #e8e3d6;
+
+  --color-danger-bg: #fbebe8;
+  --color-danger-text: #a3402f;
+  --color-warning-bg: #faf1da;
+  --color-warning-text: #8a6a1e;
+  --color-success-bg: #e9f0e0;
+  --color-success-text: #4b6b34;
+
+  --color-teal-bg: #e3eeea;
+  --color-teal-text: #1f5c52;
+  --color-lavender-bg: #ece7fa;
+  --color-lavender-text: #4b3f86;
 }
 
 html,
@@ -36,6 +50,18 @@ body,
 body {
   font-family: var(--font-sans);
   background-color: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.font-serif-display {
+  font-family: var(--font-serif);
+}
+
+.label-eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--color-ink-muted);
 }
 
 * {

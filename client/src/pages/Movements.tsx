@@ -35,11 +35,16 @@ export function MovementsPage() {
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+
   async function loadMovements() {
     setLoading(true);
     setError("");
     try {
-      const { data } = await api.get("/movements");
+      const { data } = await api.get("/movements", {
+        params: { dateFrom: dateFrom || undefined, dateTo: dateTo || undefined },
+      });
       setMovements(data);
     } catch (err) {
       setError(apiErrorMessage(err, "تعذّر تحميل حركات المخزون"));
@@ -58,9 +63,13 @@ export function MovementsPage() {
   }
 
   useEffect(() => {
-    loadMovements();
     loadProducts();
   }, []);
+
+  useEffect(() => {
+    loadMovements();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateFrom, dateTo]);
 
   function openAdd() {
     setProductId(products[0]?.id ?? "");
@@ -93,24 +102,47 @@ export function MovementsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-bold text-gray-900">حركات المخزون</h1>
+        <h1 className="font-serif-display text-3xl font-semibold text-ink">حركات المخزون</h1>
         <AppButton icon={<Plus size={16} />} onClick={openAdd} disabled={!products.length}>
           تسجيل حركة جديدة
         </AppButton>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+      <div className="flex flex-col gap-3 rounded-3xl border border-card-border bg-card p-4 sm:flex-row sm:items-center">
+        <label className="flex flex-1 items-center gap-2 text-sm text-ink-muted">
+          من تاريخ
+          <TextInput type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-full" />
+        </label>
+        <label className="flex flex-1 items-center gap-2 text-sm text-ink-muted">
+          إلى تاريخ
+          <TextInput type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-full" />
+        </label>
+        {(dateFrom || dateTo) && (
+          <button
+            type="button"
+            onClick={() => {
+              setDateFrom("");
+              setDateTo("");
+            }}
+            className="text-sm font-medium text-ink underline decoration-card-border underline-offset-4 hover:decoration-ink sm:shrink-0"
+          >
+            مسح تاريخ البحث
+          </button>
+        )}
+      </div>
+
+      <div className="overflow-hidden rounded-3xl border border-card-border bg-card">
         {loading ? (
-          <p className="p-8 text-center text-sm text-gray-400">جارِ التحميل...</p>
+          <p className="p-8 text-center text-sm text-ink-muted">جارِ التحميل...</p>
         ) : error ? (
           <p className="p-8 text-center text-sm text-danger-text">{error}</p>
         ) : movements.length === 0 ? (
-          <p className="p-8 text-center text-sm text-gray-400">لا توجد حركات مخزون بعد</p>
+          <p className="p-8 text-center text-sm text-ink-muted">لا توجد حركات مخزون بعد</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-surface">
-                <tr className="text-gray-400">
+                <tr className="text-ink-muted">
                   <th className="px-4 py-3 text-right font-medium">المنتج</th>
                   <th className="px-4 py-3 text-right font-medium">نوع الحركة</th>
                   <th className="px-4 py-3 text-right font-medium">الكمية</th>
@@ -120,10 +152,10 @@ export function MovementsPage() {
               </thead>
               <tbody>
                 {movements.map((m) => (
-                  <tr key={m.id} className="border-t border-gray-50">
+                  <tr key={m.id} className="border-t border-card-border/70">
                     <td className="px-4 py-3">
-                      <p className="font-semibold text-gray-800">{m.productName}</p>
-                      <p className="font-mono text-xs text-gray-400">{m.productCode}</p>
+                      <p className="font-semibold text-ink">{m.productName}</p>
+                      <p className="font-mono text-xs text-ink-muted">{m.productCode}</p>
                     </td>
                     <td className="px-4 py-3">
                       <MovementBadge type={m.type} />
@@ -132,8 +164,8 @@ export function MovementsPage() {
                       {m.type === "IN" ? "+" : "-"}
                       {m.quantity}
                     </td>
-                    <td className="px-4 py-3 text-gray-500">{m.reason}</td>
-                    <td className="px-4 py-3 text-gray-400">{formatDate(m.createdAt)}</td>
+                    <td className="px-4 py-3 text-ink-muted">{m.reason}</td>
+                    <td className="px-4 py-3 text-ink-muted">{formatDate(m.createdAt)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -152,7 +184,7 @@ export function MovementsPage() {
               className="w-full"
             />
             {selectedProduct && (
-              <p className="text-xs text-gray-400">الكمية المتوفرة حالياً: {selectedProduct.quantity}</p>
+              <p className="text-xs text-ink-muted">الكمية المتوفرة حالياً: {selectedProduct.quantity}</p>
             )}
           </FieldWrapper>
 
@@ -161,10 +193,10 @@ export function MovementsPage() {
               <button
                 type="button"
                 onClick={() => setType("IN")}
-                className={`flex items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition ${
+                className={`flex items-center justify-center gap-2 rounded-full border px-4 py-2.5 text-sm font-semibold transition ${
                   type === "IN"
                     ? "border-success-text bg-success-bg text-success-text"
-                    : "border-gray-200 text-gray-500 hover:bg-gray-50"
+                    : "border-card-border text-ink-muted hover:bg-sidebar-hover"
                 }`}
               >
                 <ArrowUpCircle size={16} />
@@ -173,10 +205,10 @@ export function MovementsPage() {
               <button
                 type="button"
                 onClick={() => setType("OUT")}
-                className={`flex items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition ${
+                className={`flex items-center justify-center gap-2 rounded-full border px-4 py-2.5 text-sm font-semibold transition ${
                   type === "OUT"
                     ? "border-danger-text bg-danger-bg text-danger-text"
-                    : "border-gray-200 text-gray-500 hover:bg-gray-50"
+                    : "border-card-border text-ink-muted hover:bg-sidebar-hover"
                 }`}
               >
                 <ArrowDownCircle size={16} />

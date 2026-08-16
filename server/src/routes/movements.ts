@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { requireAuth } from "../middleware/auth";
 
@@ -7,10 +8,23 @@ const router = Router();
 router.use(requireAuth);
 
 router.get("/", async (req, res) => {
-  const { productId, limit } = req.query as { productId?: string; limit?: string };
+  const { productId, limit, dateFrom, dateTo } = req.query as {
+    productId?: string;
+    limit?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  };
+
+  const where: Prisma.StockMovementWhereInput = {};
+  if (productId) where.productId = productId;
+  if (dateFrom || dateTo) {
+    where.createdAt = {};
+    if (dateFrom) where.createdAt.gte = new Date(`${dateFrom}T00:00:00.000Z`);
+    if (dateTo) where.createdAt.lte = new Date(`${dateTo}T23:59:59.999Z`);
+  }
 
   const movements = await prisma.stockMovement.findMany({
-    where: productId ? { productId } : undefined,
+    where,
     include: { product: { select: { name: true, code: true } } },
     orderBy: { createdAt: "desc" },
     take: limit ? Number(limit) : undefined,
