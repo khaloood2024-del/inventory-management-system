@@ -29,8 +29,8 @@ router.get("/", async (req, res) => {
 
   if (search && search.trim()) {
     where.OR = [
-      { name: { contains: search.trim() } },
-      { code: { contains: search.trim() } },
+      { name: { contains: search.trim(), mode: "insensitive" } },
+      { code: { contains: search.trim(), mode: "insensitive" } },
     ];
   }
 

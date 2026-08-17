@@ -2,6 +2,14 @@
 
 نظام لإدارة المنتجات والتصنيفات وحركات المخزون، مع لوحة تحكم تعرض إحصائيات مباشرة وتنبيهات للمنتجات منخفضة المخزون. الطابع البصري مستوحى من تصميم Origin (خلفية كريمية دافئة، أزرار دائرية، خط Serif للعناوين).
 
+## الروابط
+
+- **النسخة المنشورة (الواجهة):** https://inventory-management-system-eta-drab.vercel.app
+- **الـ API (الخلفية):** https://inventory-management-system-production-3512.up.railway.app/api
+- **مستودع الكود (Repository):** https://github.com/khaloood2024-del/inventory-management-system
+
+بيانات دخول تجريبية: اسم المستخدم `admin` / كلمة المرور `admin123` (يُنصح بتغييرها فور الاستلام من صفحة إدارة المستخدمين).
+
 ## المزايا
 
 ### إدارة البيانات
@@ -111,6 +119,14 @@ ADMIN_NAME="اسم المدير"
 # Product & Inventory Management System
 
 A system for managing products, categories, and stock movements, with a dashboard showing live statistics and low-stock alerts. The visual style is inspired by the Origin design (warm cream background, pill-shaped buttons, serif headings).
+
+## Links
+
+- **Live app (frontend):** https://inventory-management-system-eta-drab.vercel.app
+- **API (backend):** https://inventory-management-system-production-3512.up.railway.app/api
+- **Repository:** https://github.com/khaloood2024-del/inventory-management-system
+
+Demo login: username `admin` / password `admin123` (recommend changing it right after handoff, from the Users management page).
 
 ## Features
 

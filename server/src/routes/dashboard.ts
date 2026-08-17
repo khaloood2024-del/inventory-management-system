@@ -16,7 +16,7 @@ router.get("/stats", async (_req, res) => {
   const lowStockCount = products.filter((p) => p.quantity > 0 && p.quantity < LOW_STOCK_THRESHOLD).length;
 
   const lowStockProducts = products
-    .filter((p) => p.quantity < LOW_STOCK_THRESHOLD)
+    .filter((p) => p.quantity > 0 && p.quantity < LOW_STOCK_THRESHOLD)
     .sort((a, b) => a.quantity - b.quantity)
     .slice(0, 5)
     .map((p) => ({
